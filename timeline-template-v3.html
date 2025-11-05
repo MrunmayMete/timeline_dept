@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reusable Academic Timeline — v2</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root{
+      --bg:#f5f7fa;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#667085;
+      --border:#e5e7eb;
+      --green:#63A68B;
+      --green-100:#e0f2eb;
+      --shadow:0 8px 24px rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+    a{color:var(--green);text-decoration:none}
+    a:hover{text-decoration:underline}
+    /* Header */
+    .site-header{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--card);border-bottom:1px solid var(--border);padding:24px;box-shadow:0 2px 4px rgba(0,0,0,.04)}
+    .avatar{width:92px;height:92px;border-radius:50%;object-fit:cover;border:3px solid var(--green);background:var(--green-100)}
+    .header-text{text-align:center}
+    .header-text h1{font-size:2rem;margin-bottom:4px}
+    .header-text p{color:var(--muted)}
+    /* Controls */
+    .controls{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--border);padding:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--green);background:var(--green-100);color:#0f172a;cursor:pointer;font-weight:700}
+    .btn.primary{background:var(--green);color:#fff}
+    .controls input[type=file]{display:none}
+    /* Year pills */
+    .year-nav-wrap{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:10}
+    .year-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px 16px}
+    .year-pill{padding:8px 14px;border-radius:999px;background:#f0f2f4;border:1px solid var(--border);color:#374151;font-weight:700;cursor:pointer}
+    .year-pill.active{background:var(--green);color:#fff;border-color:var(--green)}
+    /* Timeline */
+    .timeline{max-width:1000px;margin:28px auto;padding:0 20px;position:relative}
+    .line{position:absolute;left:50%;top:0;bottom:0;width:4px;background:#555;transform:translateX(-50%);border-radius:2px}
+    .year-anchor{scroll-margin-top:120px}
+    .item{position:relative;display:flex;gap:20px;justify-content:space-between;margin-bottom:40px}
+    .bubble{position:absolute;left:50%;transform:translateX(-50%);top:20px;width:80px;height:80px;border-radius:50%;background:#f0f2f4;border:4px solid var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem;z-index:2}
+    .imgwrap,.card{width:calc(50% - 60px)}
+    .imgwrap{min-height:250px;overflow:hidden;border-radius:16px;background:#eef2f0;border:1px solid var(--border);box-shadow:var(--shadow)}
+    .imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+    /* Card look matching screenshot */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:22px;border-top:6px solid var(--green);position:relative}
+    .card h3{color:var(--green);font-size:1.6rem;margin-bottom:8px}
+    .card p.lead{color:var(--text);opacity:.9;margin-bottom:10px}
+    .sec{font-weight:800;color:#0f172a;display:flex;align-items:center;gap:8px;margin-top:14px;margin-bottom:6px}
+    .bullets{margin-left:18px}
+    .bullets li{list-style:disc;margin:6px 0;color:#374151}
+    .tags{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
+    .tag{padding:8px 12px;border-radius:24px;border:2px solid var(--green);color:#2f6b55;background:#f4fbf8;font-weight:700;font-size:.9rem}
+    .pubcount{font-weight:800;margin-top:10px}
+    .pubs{margin-left:18px}
+    .pubs li{list-style:disc;margin:6px 0}
+    .pubs a{position:relative}
+    .pubs a::after{content:'↗';font-weight:900;margin-left:6px;opacity:.65}
+    /* Arrows */
+    .card::after{content:'';position:absolute;top:30px;border-style:solid;width:0;height:0}
+    
+    .item.left .imgwrap { order:1; }
+    .item.left .card { order:3; }
+
+    .item.right .card { order:1; }
+    .item.right .imgwrap { order:3; }
+
+    .item.left .card::after{
+      left:-15px;
+      border-width:15px 15px 15px 0;
+      border-color:transparent var(--card) transparent transparent;
+      filter:drop-shadow(-1px 0 0 var(--border));
+    }
+    .item.right .card::after{
+      right:-15px;
+      border-width:15px 0 15px 15px;
+      border-color:transparent transparent transparent var(--card);
+      filter:drop-shadow(1px 0 0 var(--border));
+    }
+
+@media (max-width:768px){
+      .line{left:30px;transform:none}
+      .item{flex-direction:column;padding-left:70px}
+      .bubble{left:0;transform:none;top:0;width:60px;height:60px}
+      .imgwrap,.card{width:100%}
+      .card::after{display:none}
+    }
+  </style>
+</head>
+<body>
+<header class="site-header">
+<img alt="Portrait" class="avatar" id="avatar"/>
+<div class="header-text">
+<h1 id="title">Person Name</h1>
+<p id="subtitle">Academic Journey Timeline</p>
+</div>
+</header>
+<div class="controls">
+<button class="btn" id="btn-profile">✦ Edit Profile Info</button>
+<button class="btn primary" id="btn-add">Add Timeline Entry</button>
+<button class="btn" id="btn-photo">Add / Replace Photo</button>
+<label class="btn">
+      Import JSON
+      <input accept="application/json" id="file" type="file"/>
+</label>
+<button class="btn" id="btn-export">Export JSON</button>
+<button class="btn" id="btn-reload">Reload from URL</button>
+</div>
+<div class="year-nav-wrap">
+<div class="year-nav" id="year-nav"></div>
+</div>
+<main class="timeline">
+<div aria-hidden="true" class="line"></div>
+<div id="root"></div>
+</main>
+<script>
+    const $ = (s, c=document)=>c.querySelector(s);
+    const $$ = (s, c=document)=>Array.from(c.querySelectorAll(s));
+    const gid = (id)=>document.getElementById(id);
+
+    const driveToDirect = (u)=>{
+      try{ const m=u.match(/\/file\/d\/([^/]+)\//); if(m) return `https://drive.google.com/uc?export=view&id=${m[1]}`; }catch(e){}
+      return u;
+    };
+
+    function download(filename, text){
+      const a=document.createElement('a');
+      a.href='data:application/json;charset=utf-8,'+encodeURIComponent(text);
+      a.download=filename; a.click();
+    }
+
+    let STATE={name:'Person Name', subtitle:'Academic Journey Timeline', avatar:'https://placehold.co/90x90/e0f2eb/63A68B?text=AV', timeline:{}};
+    let SOURCE=null;
+
+    async function loadFromURL(){
+      const data= new URLSearchParams(location.search).get('data');
+      if(!data) return;
+      SOURCE=data;
+      const res= await fetch(data, {cache:'no-store'});
+      if(!res.ok) throw new Error('Failed to fetch data: '+res.status);
+      STATE= await res.json();
+      render();
+    }
+
+    function secHeading(icon, text){
+      const wrap=document.createElement('div'); wrap.className='sec';
+      wrap.innerHTML=icon+' '+text;
+      return wrap;
+    }
+
+    function render(){
+      gid('title').textContent=STATE.name||'Person Name';
+      gid('subtitle').textContent=STATE.subtitle||'Academic Journey Timeline';
+      const av=gid('avatar'); av.src=STATE.avatar||'https://placehold.co/90x90/e0f2eb/63A68B?text=AV'; av.alt=`Portrait of ${STATE.name||'person'}`;
+
+      const nav=gid('year-nav'); nav.innerHTML='';
+      const root=gid('root'); root.innerHTML='';
+
+      const years=Object.keys(STATE.timeline).sort();
+      let globalIndex=0;
+years.forEach((year,i)=>{
+        const pill=document.createElement('button');
+        pill.className='year-pill'+(i===0?' active':'');
+        pill.textContent=year;
+        pill.addEventListener('click',()=>{
+          document.getElementById('year-'+year)?.scrollIntoView({behavior:'smooth', block:'start'});
+          $$('.year-pill').forEach(p=>p.classList.remove('active')); pill.classList.add('active');
+        });
+        nav.appendChild(pill);
+
+        const container=document.createElement('div');
+        container.className='year-anchor';
+        container.id='year-'+year;
+        const val=STATE.timeline[year];
+        const entries= Array.isArray(val)? val : [val];
+
+        entries.forEach(entry=>{
+          const item=document.createElement('section'); item.className='item ' + (globalIndex % 2 === 0 ? 'left' : 'right'); globalIndex++;
+
+          const bubble=document.createElement('div'); bubble.className='bubble'; bubble.textContent=year;
+
+          const imgw=document.createElement('div'); imgw.className='imgwrap';
+          const img=document.createElement('img'); img.loading='lazy'; img.decoding='async';
+          img.src= entry?.image || `https://placehold.co/800x600/e0f2eb/63A68B?text=${year}+Visual`;
+          imgw.appendChild(img);
+
+          const card=document.createElement('div'); card.className='card';
+          const h3=document.createElement('h3'); h3.textContent= entry?.title || '(Untitled)';
+          card.appendChild(h3);
+
+          if(entry?.description){
+            const p=document.createElement('p'); p.className='lead'; p.textContent=entry.description; card.appendChild(p);
+          }
+
+          if(entry?.events?.length){
+            const calSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+            card.appendChild(secHeading(calSVG,'Key Events'));
+            const ul=document.createElement('ul'); ul.className='bullets';
+            entry.events.forEach(e=>{ const li=document.createElement('li'); li.textContent=e; ul.appendChild(li); });
+            card.appendChild(ul);
+          }
+
+          if(entry?.research?.length){
+            const bulbSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M11 18v4"/><path d="M7 14h.7L10 20h4l2.3-6h.7"/></svg>`;
+            card.appendChild(secHeading(bulbSVG,'Research Focus'));
+            const tags=document.createElement('div'); tags.className='tags';
+            entry.research.forEach(t=>{ const span=document.createElement('span'); span.className='tag'; span.textContent=t; tags.appendChild(span); });
+            card.appendChild(tags);
+          }
+
+          if(entry?.publications?.length){
+            const count=document.createElement('div'); count.className='pubcount'; count.textContent=`Publications (${entry.publications.length})`;
+            card.appendChild(count);
+            const ul=document.createElement('ul'); ul.className='pubs';
+            entry.publications.forEach(p=>{
+              const li=document.createElement('li');
+              if(Array.isArray(p)){ const a=document.createElement('a'); a.textContent=p[0]; a.href=p[1]||'#'; a.target='_blank'; a.rel='noopener noreferrer external'; li.appendChild(a); }
+              else { li.textContent=String(p); }
+              ul.appendChild(li);
+            });
+            card.appendChild(ul);
+          }
+
+          item.appendChild(imgw);
+          item.appendChild(bubble);
+          item.appendChild(card);
+          container.appendChild(item);
+        });
+
+        root.appendChild(container);
+      });
+    }
+
+    // Buttons
+    gid('btn-profile').addEventListener('click',()=>{
+      const name=prompt('Enter Name:', STATE.name||'');
+      if(name!==null) STATE.name=name.trim()||STATE.name;
+      const subtitle=prompt('Enter Subtitle (optional):', STATE.subtitle||'');
+      if(subtitle!==null) STATE.subtitle=subtitle;
+      const av=prompt('Enter Avatar image link (Google Drive or direct URL):', STATE.avatar||'');
+      if(av!==null) STATE.avatar= driveToDirect(av.trim()||STATE.avatar);
+      render();
+      alert('✅ Profile updated. Export JSON to save it.');
+    });
+
+    gid('btn-add').addEventListener('click',()=>{
+      const year=prompt('Enter Year (e.g., 2019):'); if(!year) return;
+      const title=prompt('Enter Title/Heading:')||'(Untitled)';
+      const desc=prompt('Enter a short Description/Intro paragraph (optional):')||'';
+      const eventsStr=prompt('Enter Key Events (comma-separated):')||'';
+      const researchStr=prompt('Enter Research Focus tags (comma-separated):')||'';
+      const pubsStr=prompt('Enter Publications as Title|Link pairs, comma-separated:')||'';
+
+      const entry={
+        title, description:desc,
+        events: eventsStr? eventsStr.split(',').map(s=>s.trim()).filter(Boolean):[],
+        research: researchStr? researchStr.split(',').map(s=>s.trim()).filter(Boolean):[],
+        publications: pubsStr? pubsStr.split(',').map(s=>{ const [t,l]=s.split('|'); return [(t||'').trim(), (l||'').trim()] }):[],
+        image:`https://placehold.co/800x600/e0f2eb/63A68B?text=${year}+Visual`
+      };
+
+      const existing=STATE.timeline[year];
+      if(!existing){ STATE.timeline[year]=entry; }
+      else if(Array.isArray(existing)){ existing.push(entry); }
+      else { STATE.timeline[year]=[existing, entry]; }
+      render();
+      alert('✅ Entry added. Export JSON to save your changes.');
+    });
+
+    gid('btn-photo').addEventListener('click',()=>{
+      const year=prompt('Enter Year for the photo replacement:'); if(!year) return;
+      const link=prompt('Paste Google Drive image link or direct image URL:'); if(!link) return;
+      const direct=driveToDirect(link);
+      const existing=STATE.timeline[year];
+      if(!existing){ alert('⚠️ Year not found. Add an entry first.'); return; }
+      if(Array.isArray(existing)){
+        const idxStr=prompt(`Year ${year} has ${existing.length} entries. Enter entry number (1..${existing.length}):`);
+        const idx=Math.max(1, Math.min(existing.length, parseInt(idxStr||'1',10))) - 1;
+        existing[idx].image=direct;
+      } else {
+        existing.image=direct;
+      }
+      render();
+      alert('✅ Image updated. Export JSON to save your changes.');
+    });
+
+    gid('file').addEventListener('change',(e)=>{
+      const f=e.target.files?.[0]; if(!f) return;
+      const reader=new FileReader();
+      reader.onload=()=>{
+        try{ STATE=JSON.parse(reader.result); render(); alert('✅ JSON imported.'); }
+        catch(err){ alert('❌ Failed to parse JSON: '+err.message); }
+      };
+      reader.readAsText(f);
+    });
+
+    gid('btn-export').addEventListener('click',()=>{
+      const filename=(STATE.name||'timeline').toLowerCase().replace(/\s+/g,'-')+'.json';
+      download(filename, JSON.stringify(STATE,null,2));
+    });
+
+    gid('btn-reload').addEventListener('click', async ()=>{
+      try{ await loadFromURL(); alert('🔄 Reloaded from URL.'); }
+      catch(e){ alert('❌ '+e.message); }
+    });
+
+    (async()=>{ try{ await loadFromURL(); }catch(e){ console.warn(e); } render(); })();
+  </script>
+</body>
+</html>
